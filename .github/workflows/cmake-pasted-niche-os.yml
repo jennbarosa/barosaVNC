@@ -1,0 +1,64 @@
+name: build-windows-barosavnc
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: check for cached vcpkg
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/vcpkg
+          key: vcpkg-win
+          restore-keys: vcpkg-win
+            
+      - name: vcpkg
+        run: |
+          git clone --recurse-submodules https://github.com/microsoft/vcpkg.git ${{ github.workspace }}/vcpkg
+          .\vcpkg\bootstrap-vcpkg.bat
+          .\vcpkg\vcpkg.exe install curl nlohmann-json libwebp fmt zlib openssl
+          .\vcpkg\vcpkg.exe integrate install
+
+      - name: check for cached libvncserver
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/deps/LibVNCServer
+          key: libvncserver-win
+          restore-keys: libvncserver-win
+
+      - name: libvncserver
+        run: |
+          if (-Not (Test-Path "${{ github.workspace }}/deps/LibVNCServer/lib/cmake/LibVNCServer")) {
+            git clone --recurse-submodules https://github.com/LibVNC/libvncserver.git ${{ github.workspace }}/libvncserver
+            cd ${{ github.workspace }}/libvncserver
+            mkdir build
+            cd build
+            cmake .. -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/deps/LibVNCServer"
+            cmake --build . --config Release --target INSTALL --parallel
+          } else {
+            Write-Host "Using cached libvncserver"
+          }
+
+      - name: Checkout barosavnc
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          path: repo
+          
+      - name: Build barosavnc (windows)
+        run: |
+          cd repo
+          mkdir build && cd build
+          cmake .. -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release -DLibVNCServer_DIR="${{ github.workspace }}/deps/LibVNCServer/lib/cmake/LibVNCServer"
+          cmake --build . --config Release --target ALL_BUILD --parallel
+          
+      - name: Upload exe artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: barosavnc windows exe (release build)
+          path: ${{ github.workspace }}/repo/build/Release

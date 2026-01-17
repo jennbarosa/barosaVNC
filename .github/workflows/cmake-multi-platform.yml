@@ -1,0 +1,43 @@
+name: build-linux-barosavnc
+
+on:
+  push:
+    branches: [main, test-win-build]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git cmake clang lld libc++-dev libc++abi-dev \
+            libvncserver-dev libwebp-dev \
+            zlib1g-dev libjpeg-turbo8-dev libpng-dev libssl-dev \
+            nlohmann-json3-dev libcurl4-openssl-dev libfmt-dev
+
+      - name: Configure & Build
+        run: |
+          mkdir build && cd build
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_STANDARD=23 \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_CXX_FLAGS="-stdlib=libc++ -fexperimental-library"
+          cmake --build . --config Release
+
+      - name: Test
+        working-directory: build
+        run: ctest --output-on-failure
+
+      - name: Upload exe artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: barosavnc linux exe (release build)
+          path: ${{ github.workspace }}/build
