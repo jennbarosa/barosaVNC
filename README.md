@@ -40,3 +40,6 @@ barosavnc -F ips.txt -fmt lines -pwlist passwords.txt -ct 1 -j 10
 Do not connect to, access, or interact with any VNC server without explicit authorization from the owner. Unauthorized access may be illegal and unethical. Use this software only on systems you own or have been given clear permission to test or monitor.
 
 The author and distributor of this software are not liable for any misuse, damage, loss, or legal consequences resulting from how the software is used. Users are solely responsible for ensuring they have the necessary permissions and for complying with all applicable laws and policies.
+
+# License
+MIT
