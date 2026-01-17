@@ -1,6 +1,10 @@
 # barosavnc
-BarosaVNC is a remote VNC server connector and screen viewer. You can remote into public VNC servers and display the
+BarosaVNC is a remote VNC server connector and screen viewer. You can remote into your server and display the
 viewport, send commands, send chat messages, and filter servers over the VNC protocol. Viewports can be sent to slack/discord/any other remote webhook embedding of your choice for status updates and other VNC server tasks.
+
+Example webhook/embed response (server info redacted) 
+
+<img width="300" height="300" alt="image" src="https://github.com/user-attachments/assets/e9b99ac5-1eee-40c9-8d6f-46544ff30090" />
 
 
 ## Quick start 
@@ -31,3 +35,8 @@ Filter VNCs in parallel
 ```sh
 barosavnc -F ips.txt -fmt lines -pwlist passwords.txt -ct 1 -j 10
 ```
+
+# Disclaimer
+Do not connect to, access, or interact with any VNC server without explicit authorization from the owner. Unauthorized access may be illegal and unethical. Use this software only on systems you own or have been given clear permission to test or monitor.
+
+The author and distributor of this software are not liable for any misuse, damage, loss, or legal consequences resulting from how the software is used. Users are solely responsible for ensuring they have the necessary permissions and for complying with all applicable laws and policies.
